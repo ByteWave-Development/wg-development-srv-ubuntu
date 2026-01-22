@@ -20,10 +20,10 @@ Este script automatiza el despliegue de un entorno de desarrollo robusto, seguro
 Ejecuta este comando para descargar, configurar e instalar todo automáticamente:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/ByteWave-Development/wg-development-srv-ubuntu/main/generate_config.sh -o generate_config.sh && \
+curl -sSL https://raw.githubusercontent.com/ByteWave-Development/wg-development-srv-ubuntu/main/gen_config.sh -o gen_config.sh && \
 curl -sSL https://raw.githubusercontent.com/ByteWave-Development/wg-development-srv-ubuntu/main/deploy.sh -o deploy.sh && \
-chmod +x generate_config.sh deploy.sh && \
-./generate_config.sh /tmp/config.env 
+chmod +x gen_config.sh deploy.sh && \
+./gen_config.sh /tmp/config.env \
   --WG_ENDPOINT "vpn.example.com" \
   --WG_UI_DOMAIN "vpn.example.com" \
   --ADMIN_PASSWORD "admin" \
