@@ -10,7 +10,7 @@ fi
 shift # Quitar la ruta de los argumentos para procesar los flags
 
 # --- VALORES POR DEFECTO ---
-PUBLIC_IP=$(curl -s https://ifconfig.me || echo "vpn.example.com")
+PUBLIC_IP=$(curl -s https://ifconfig.me/ip || echo "vpn.example.com")
 DEBUG_MODE="false"
 INSTALL_SYSTEM_UPDATE="true"
 INSTALL_DOCKER="true"
