@@ -486,16 +486,16 @@ EOF
     stop_spinner $? "Configuración JSON aplicada"
     
     start_spinner "Instalando Caddy..."
-    run_command "export SYSTEMD_PAGER=cat" "Hardening TTY para Caddy"
-    run_command "export SYSTEMD_COLORS=0" "Hardening TTY para Caddy"
-    run_command "apt install -y debian-keyring debian-archive-keyring apt-transport-https" "Deps Caddy"
+    run_command "apt update && apt install -y debian-keyring debian-archive-keyring apt-transport-https curl gnupg" "Deps Caddy"
 
-    run_command "curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | tee /usr/share/keyrings/caddy-stable-archive-keyring.gpg >/dev/null" "GPG Caddy"
+    run_command "curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/gpg.key | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg" "GPG Caddy"
 
-    run_command "curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list" "Repo Caddy"
+    run_command "curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt | tee /etc/apt/sources.list.d/caddy-stable.list >/dev/null" "Repo Caddy"
 
-    run_command "apt-get update -o Dpkg::Use-Pty=0" "Actualizar repositorios"
-    run_command "apt-get install -y -o Dpkg::Use-Pty=0 caddy" "Instalar Caddy"
+    run_command "chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg" "Permisos keyring"
+    run_command "chmod o+r /etc/apt/sources.list.d/caddy-stable.list" "Permisos repo"
+
+    run_command "apt update && apt install -y caddy" "Instalar Caddy"
     stop_spinner $? "Caddy instalado"
 
     start_spinner "Configurando Caddyfile..."
