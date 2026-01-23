@@ -136,7 +136,7 @@ show_spinner() {
     local i=0
     
     while true; do
-        printf "\r${CYAN}${SPINNER_FRAMES[$i]}${NC} ${WHITE}${message}${NC}"
+        printf "\r${CYAN}${SPINNER_FRAMES[$i]}${NC} ${WHITE}%s${NC}" "$message"
         i=$(( (i + 1) % ${#SPINNER_FRAMES[@]} ))
         sleep 0.1
     done
@@ -165,10 +165,10 @@ stop_spinner() {
     fi
     
     if [ $status -eq 0 ]; then
-        printf "\r${GREEN}✓${NC} ${WHITE}${message}${NC}\n"
+        printf "\r${GREEN}✓${NC} ${WHITE}%s${NC}\n" "$message"
         log_message "SUCCESS" "$message"
     else
-        printf "\r${RED}✗${NC} ${WHITE}${message}${NC}\n"
+        printf "\r${RED}✗${NC} ${WHITE}%s${NC}\n" "$message"
         log_error "$message"
     fi
     
