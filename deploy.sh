@@ -641,8 +641,8 @@ if check_module "INSTALL_PYTHON" "Python Tools"; then
     print_section "PYTHON - HERRAMIENTAS ADICIONALES"
     
     start_spinner "Instalando herramientas Python..."
-    run_command "python3 -m pip install --upgrade pip --quiet" "Actualizar pip"
-    run_command "su - $DEV_USER -c 'python3 -m pip install --user --upgrade virtualenv poetry openai --quiet'" "Instalar herramientas Python"
+    run_command "apt-get install -y python3-pip python3-venv --quiet" "Instalar pip y venv"
+    run_command "su - $DEV_USER -c 'python3 -m pip install --user --upgrade pip virtualenv poetry openai --quiet'" "Instalar herramientas Python"
     stop_spinner $? "Herramientas Python instaladas"
     
     debug_pause
