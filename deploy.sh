@@ -691,40 +691,64 @@ fi
 if check_module "INSTALL_PHPMYADMIN" "phpMyAdmin"; then
     print_section "CONFIGURACIÓN DE PHPMYADMIN (DOCKER + MYSQL)"
 
-    # Crear usuario MySQL para cada host/rango permitido
+    start_spinner "Configurando MySQL para aceptar conexiones de red..."
+    run_command "sed -i 's/^bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf" "Configurar bind-address"
+    if ! grep -q "^bind-address" /etc/mysql/mysql.conf.d/mysqld.cnf; then
+        run_command "echo 'bind-address = 0.0.0.0' >> /etc/mysql/mysql.conf.d/mysqld.cnf" "Agregar bind-address"
+    fi
+    run_command "systemctl restart mysql" "Reiniciar MySQL"
+    sleep 3
+    stop_spinner $? "MySQL configurado para red"
+
+    # Crear usuario MySQL
     IFS=',' read -ra NETS <<< "$MYSQL_ALLOWED_NET"
     for net in "${NETS[@]}"; do
+        net=$(echo "$net" | xargs)
         start_spinner "Creando usuario MySQL '${MYSQL_DEV_USER}'@'${net}'..."
         run_command "mysql --protocol=socket <<EOF
-CREATE USER IF NOT EXISTS '${MYSQL_DEV_USER}'@'${net}' IDENTIFIED BY '${MYSQL_DEV_PASSWORD}';
+DROP USER IF EXISTS '${MYSQL_DEV_USER}'@'${net}';
+CREATE USER '${MYSQL_DEV_USER}'@'${net}' IDENTIFIED BY '${MYSQL_DEV_PASSWORD}';
 GRANT ALL PRIVILEGES ON *.* TO '${MYSQL_DEV_USER}'@'${net}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 EOF
-" "Usuario MySQL '${MYSQL_DEV_USER}' creado para host '${net}'"
+" "Usuario MySQL para '${net}'"
         stop_spinner $? "Usuario MySQL para '${net}' configurado"
     done
 
-    
-    ### Levantar phpMyAdmin en Docker
+    start_spinner "Creando usuario MySQL para red Docker..."
+    run_command "mysql --protocol=socket <<EOF
+DROP USER IF EXISTS '${MYSQL_DEV_USER}'@'172.17.0.%';
+CREATE USER '${MYSQL_DEV_USER}'@'172.17.0.%' IDENTIFIED BY '${MYSQL_DEV_PASSWORD}';
+GRANT ALL PRIVILEGES ON *.* TO '${MYSQL_DEV_USER}'@'172.17.0.%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+EOF
+" "Usuario MySQL para Docker"
+    stop_spinner $? "Usuario MySQL Docker configurado"
+
+    # Detectar IP del host
+    HOST_IP=$(ip -4 addr show docker0 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n1)
+    if [ -z "$HOST_IP" ]; then
+        HOST_IP=$(ip -4 addr show "$MAIN_IFACE" | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n1)
+    fi
+    log_message "INFO" "IP del host para Docker: $HOST_IP"
+
+    # Levantar phpMyAdmin
     start_spinner "Instalando phpMyAdmin (Docker)..."
-
     run_command "docker rm -f phpmyadmin 2>/dev/null || true" "Limpiar contenedor anterior"
-
     run_command "
     docker run -d \
       --name phpmyadmin \
       --restart always \
-      --add-host=host.docker.internal:host-gateway \
-      -e PMA_HOST=host.docker.internal \
+      -e PMA_HOST=${HOST_IP} \
       -e PMA_PORT=3306 \
-      -e PMA_USER=$MYSQL_DEV_USER \
-      -e PMA_PASSWORD=$MYSQL_DEV_PASSWORD \
+      -e PMA_ARBITRARY=0 \
+      -e HIDE_PHP_VERSION=true \
+      -e UPLOAD_LIMIT=64M \
       -p ${WG_HOST_IP}:${PHPMYADMIN_PORT}:80 \
-      phpmyadmin/phpmyadmin
+      phpmyadmin/phpmyadmin:latest
     " "Crear contenedor phpMyAdmin"
-
     stop_spinner $? "phpMyAdmin instalado y corriendo"
-
+    
     debug_pause
 fi
 
