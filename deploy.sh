@@ -630,7 +630,7 @@ if check_module "INSTALL_NODEJS" "Node.js"; then
       nvm install --lts
       npm install -g pnpm yarn
     ' >> "$LOG_FILE" 2>&1
-    local exit_code=$?
+    exit_code=$?
     stop_spinner $exit_code "Node.js LTS y gestores de paquetes instalados"
     
     debug_pause
