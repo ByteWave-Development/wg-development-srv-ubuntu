@@ -782,6 +782,7 @@ if check_module "INSTALL_FIREWALL" "Firewall"; then
     run_command "ufw allow in on wg0" "Permitir tráfico VPN"
     run_command "ufw route allow in on wg0 out on $MAIN_IFACE" "Permitir tráfico foward VPN"
     run_command "ufw route allow in on $MAIN_IFACE out on wg0" "Permitir enrutamiento de tráfico VPN"
+    run_command "ufw allow from 172.17.0.0/16 to any port 3306 proto tcp" "Permitir MySQL desde Docker"
     run_command "ufw --force enable" "Habilitar UFW"
     stop_spinner $? "Firewall configurado"
     
