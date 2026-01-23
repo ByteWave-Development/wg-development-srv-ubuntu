@@ -639,12 +639,24 @@ fi
 ### ================= PYTHON =================
 if check_module "INSTALL_PYTHON" "Python Tools"; then
     print_section "PYTHON - HERRAMIENTAS ADICIONALES"
-    
-    start_spinner "Instalando herramientas Python..."
-    run_command "apt-get install -y python3-pip python3-venv --quiet" "Instalar pip y venv"
-    run_command "su - $DEV_USER -c 'python3 -m pip install --user --upgrade pip virtualenv poetry openai --quiet'" "Instalar herramientas Python"
-    stop_spinner $? "Herramientas Python instaladas"
-    
+
+    start_spinner "Instalando Python base..."
+    run_command "apt-get install -y python3-pip python3-venv pipx" "Instalar pip, venv y pipx"
+    stop_spinner $? "Python base instalado"
+
+    start_spinner "Configurando pipx para usuario dev..."
+    run_command "su - $DEV_USER -c 'pipx ensurepath'" "Inicializar pipx"
+    stop_spinner $? "pipx configurado"
+
+    start_spinner "Instalando herramientas Python con pipx..."
+    run_command "su - $DEV_USER -c '
+        export PATH=\$HOME/.local/bin:\$PATH
+        pipx install poetry
+        pipx install virtualenv
+        pipx install openai
+    '" "Instalar herramientas Python"
+    stop_spinner $? "Herramientas Python instaladas con pipx"
+
     debug_pause
 fi
 
