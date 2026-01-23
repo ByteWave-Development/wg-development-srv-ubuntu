@@ -623,12 +623,16 @@ if check_module "INSTALL_NODEJS" "Node.js"; then
 
     start_spinner "Instalando NVM y Node.js LTS..."
     su - $DEV_USER -c '
-      set -e  # Salir en cualquier error
+      set -e
       curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
       export NVM_DIR="$HOME/.nvm"
-      source "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
       nvm install --lts
       npm install -g pnpm yarn
+      # Configuración permanente en zshrc
+      echo "export NVM_DIR=\"$HOME/.nvm\"" >> ~/.zshrc
+      echo "[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"" >> ~/.zshrc
+      echo "export PATH=\"\$NVM_DIR/versions/node/$(nvm version)/bin:\$PATH\"" >> ~/.zshrc
     ' >> "$LOG_FILE" 2>&1
     exit_code=$?
     stop_spinner $exit_code "Node.js LTS y gestores de paquetes instalados"
