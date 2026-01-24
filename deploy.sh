@@ -689,12 +689,33 @@ password: $CODE_PASSWORD
 cert: false
 EOF
     run_command "chown -R $DEV_USER:$DEV_USER /home/$DEV_USER/.config" "Ajustar permisos"
-    run_command "systemctl start code-server@$DEV_USER" "Iniciar code-server"
     stop_spinner $? "Code-server configurado"
+
+    start_spinner "Configurando marketplace de extensiones..."
+    # Configurar variable de entorno para el marketplace de VS Code
+    cat <<'EOF' >> /home/$DEV_USER/.zshrc
+
+# Code-server marketplace configuration
+export EXTENSIONS_GALLERY='{"serviceUrl": "https://marketplace.visualstudio.com/_apis/public/gallery", "itemUrl": "https://marketplace.visualstudio.com/items"}'
+EOF
+    run_command "chown $DEV_USER:$DEV_USER /home/$DEV_USER/.zshrc" "Ajustar permisos .zshrc"
+    stop_spinner $? "Marketplace configurado"
+
+    start_spinner "Instalando extensiones de GitHub Copilot..."
+    su - $DEV_USER -c '
+        export EXTENSIONS_GALLERY="{\"serviceUrl\": \"https://marketplace.visualstudio.com/_apis/public/gallery\", \"itemUrl\": \"https://marketplace.visualstudio.com/items\"}"
+        code-server --install-extension github.copilot
+        code-server --install-extension github.copilot-chat
+    ' >> "$LOG_FILE" 2>&1
+    exit_code=$?
+    stop_spinner $exit_code "Extensiones de Copilot instaladas"
+
+    start_spinner "Iniciando code-server..."
+    run_command "systemctl start code-server@$DEV_USER" "Iniciar code-server"
+    stop_spinner $? "Code-server iniciado"
     
     debug_pause
 fi
-
 ### ================= OPENCODE AI =================
 if check_module "INSTALL_OPENCODE_AI" "OpenCode AI"; then
     print_section "INSTALACIÓN DE OPENCODE AI"
