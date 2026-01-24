@@ -812,7 +812,6 @@ if check_module "INSTALL_FIREWALL" "Firewall"; then
 fi
 
 ### ================= RESUMEN FINAL =================
-clear
 echo -e "${BOLD}${GREEN}"
 cat << "EOF"
 ╔══════════════════════════════════════════════════════════════╗
