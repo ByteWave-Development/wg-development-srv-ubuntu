@@ -130,6 +130,10 @@ run_command() {
     return 0
 }
 
+clear_line() {
+    printf "\r\033[K"
+}
+
 # Función para mostrar el spinner
 show_spinner() {
     local message="$1"
@@ -163,6 +167,8 @@ stop_spinner() {
         kill $SPINNER_PID 2>/dev/null || true
         wait $SPINNER_PID 2>/dev/null || true
     fi
+
+    clear_line
     
     if [ $status -eq 0 ]; then
         printf "\r${GREEN}✓${NC} ${WHITE}%s${NC}\n" "$message"
