@@ -716,6 +716,7 @@ EOF
     
     debug_pause
 fi
+
 ### ================= OPENCODE AI =================
 if check_module "INSTALL_OPENCODE_AI" "OpenCode AI"; then
     print_section "INSTALACIÓN DE OPENCODE AI"
