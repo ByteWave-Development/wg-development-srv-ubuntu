@@ -388,6 +388,7 @@ if check_module "INSTALL_WIREGUARD_UI" "WireGuard UI"; then
     cat <<EOF >$WG_PATH/start-wgui.sh
 #!/bin/bash
 cd $WG_PATH
+export WGUI_DEFAULT_CLIENT_ALLOWED_IPS="0.0.0.0/0,::/0"
 ./wireguard-ui -bind-address $WG_HOST_IP:$WG_UI_PORT
 EOF
     chmod +x start-wgui.sh
